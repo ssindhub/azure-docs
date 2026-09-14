@@ -4,7 +4,7 @@ description: Upgrade your Azure Data Factory to Fabric at your own pace. Explore
 author: ssindhub
 ms.author: ssrinivasara
 ms.topic: how-to
-ms.date: 08/17/2026
+ms.date: 09/14/2026
 ms.custom: pipelines
 ai-usage: ai-assisted
 ---
@@ -41,7 +41,7 @@ Azure Data Factory (classic) remains the trusted foundation you rely on today—
 
 The fastest way in is **View in Fabric**. In one click, it brings your existing factory into Fabric so you can explore it—no setup, no project plan, no commitment.
 
-All you need is an existing Azure Data Factory instance with pipelines. If you don't have a Fabric license yet, you're taken to sign up for a free one. Viewing your data factory in Fabric doesn't require any Fabric capacity.
+All you need is an existing Azure Data Factory instance with pipelines. If you don't have a Fabric license yet, you're taken to sign up for a free one. You then choose a Fabric capacity, such as a Trial capacity but note that viewing your data factory in Fabric doesn't consume any Fabric capacity.
 
 ### Step 1: Select View in Fabric
 
@@ -52,8 +52,10 @@ In your [Azure Data Factory](https://adf.azure.com) authoring canvas, select **V
 When you select **View in Fabric**:
 
 1. Fabric checks your license. If you don't already have one, you're taken to the Fabric sign-up page to get a free license.
-1. A **capacity-free personal workspace (My workspace)** is created for you—no manual setup, and no Fabric capacity required to view your factory.
-1. Your Azure Data Factory is brought into **My workspace**, where you can work with it—edit, manage, monitor, and run pipelines exactly as you do in Azure Data Factory.
+1. You choose a Fabric capacity, such as a Trial capacity and select **Continue**
+1. Fabric creates a new workspace with the same name as your Azure Data Factory and assigns it to the selected capacity.
+1. You can choose to add existing Azure Data Factory users as **Viewer** members of the new Fabric workspace. If you skip this step, no workspace access is added.
+1. Your Azure Data Factory is brought into this new workspace, where you can work with it—edit, manage, monitor, and run pipelines exactly as you do in Azure Data Factory.
 
 If you don't already have a Fabric license, sign up for a free one and accept the terms and conditions to continue.
 
@@ -62,6 +64,9 @@ If you don't already have a Fabric license, sign up for a free one and accept th
 :::image type="content" source="media/upgrade-to-fabric-data-factory/fabric-free-signup.png" alt-text="Screenshot showing sign-up for a free Fabric license." lightbox="media/upgrade-to-fabric-data-factory/fabric-free-signup.png":::
 
 :::image type="content" source="media/upgrade-to-fabric-data-factory/fabric-tnc.png" alt-text="Screenshot showing the Fabric terms and conditions acceptance." lightbox="media/upgrade-to-fabric-data-factory/fabric-tnc.png":::
+
+If you skip adding users during setup, a Fabric workspace Admin with write permission on the data factory can add access later from their Azure Data Factory studio by using the Share workspace access in the management hub under ADF in Microsoft Fabric.
+:::image type="content" source="media/upgrade-to-fabric-data-factory/share-access-to-data-factory" alt-text="Screenshot showing the how to add users to your data factory in Fabric." lightbox="media/upgrade-to-fabric-data-factory/share-access-to-data-factory.png":::
 
 A short orientation walks you through your Data Factory in Fabric the first time you arrive.
 
@@ -114,10 +119,9 @@ That's the happy path. For deeper detail on what happens behind the scenes, see 
 
 This section explains what happens behind the scenes and how to validate your results. You don't need it to get started—it's here when you want the detail.
 
-### Your factory in My workspace
+### Your factory in Fabric workspace
 
-- Your factory opens in **your own personal My workspace**, not a shared workspace. Because the flow is scoped to My workspace, **sharing is disabled by design**—there are no workspace-level roles to manage.
-- **No capacity is consumed to view your factory**, and no Fabric trial is activated. You need Fabric capacity when you upgrade your pipelines or create new Fabric artifacts—you can upgrade to a trial or paid capacity on demand at that point.
+- **No capacity is consumed to view your factory or assess readiness**. You need Fabric capacity when you upgrade your pipelines to Fabric native pipelines or create new Fabric artifacts.
 - **You get a full view of your estate.** Pipelines, linked services, triggers, and integration runtime configurations are surfaced through live references to your Azure Data Factory, and you can monitor recent pipeline run history—status, duration, and errors—directly in Fabric.
 - **Nothing changes in Azure Data Factory.** Authoring, execution, permissions, and billing all continue in Azure Data Factory exactly as before.
 
@@ -147,9 +151,9 @@ For other connections, either select an existing Fabric connection or create a n
 
 ### Upgrade behavior
 
-- Pipelines upgrade into a Fabric Data Factory workspace.
-- Pipeline names must be unique within a workspace.
-- If a pipeline with the same name already exists, the upgrade tool skips that pipeline.
+- Pipelines upgrade into a Fabric workspace with the same name as your Azure Data Factory.
+- Pipeline names are required to be unique within a workspace.
+- If a pipeline with the same name already exists in the workspace, the upgrade tool skips that pipeline.
 - To keep names unique, upgraded pipelines use the format `<Source factory or workspace name>_<Pipeline name>`.
 - You can view your existing factory structure in Fabric before upgrade.
 
@@ -174,27 +178,23 @@ The following items aren't supported in the upgrade experience today. Pipelines 
 
 | Category | Out-of-scope item | Details |
 | --- | --- | --- |
-| **Integration runtimes** | Self-hosted integration runtime (SHIR) | Can't be upgraded. Replace with the Fabric on-premises data gateway (OPDG). |
-|  | Managed virtual network IR / VNet-injected IR | Fabric uses a different model and requires reconfiguration. |
-|  | SQL Server Integration Services IR (SSIS IR) | Infrastructure upgrade isn't supported. |
-| **Workload types** | Change data capture (CDC) | Out of scope; doesn't upgrade. |
-|  | Apache Airflow assets | DAG-based orchestration can't be upgraded to Fabric. |
+| **Integration runtimes** | Self-hosted integration runtime (SHIR) | Replace with the Fabric on-premises data gateway (OPDG). |
+|  | Managed virtual network IR / VNet-injected IR | Use the VNet gateway in Fabric. |
+|  | SQL Server Integration Services IR (SSIS IR) | SSIS IR isn't needed in Fabric. You can run SSIS packages directly from a Fabric pipeline. |
+| **Workload types** | Change data capture (CDC) | Use Copy job in Fabric pipelines. |
+|  | Apache Airflow assets | Reload your existing DAG files manually into Fabric Apache Airflow jobs. |
 |  | U-SQL / Azure Data Lake Analytics | Deprecated services; not supported in Fabric. |
 |  | Cross-cloud or Azure Machine Learning refresh workloads | Workspace identity support is in progress; these workloads don't upgrade. |
 | **Connectors** | Long-tail connectors (for example, SAP ECC, SAP BW, MDX, SAP CDS) | No equivalent connectors in Fabric. Redesign required. |
 |  | Marketing and finance SaaS connectors (HubSpot, Google Ads, QuickBooks, Shopify, Xero) | Not supported today. |
 | **Triggers and orchestration** | Custom event triggers | Can't be upgraded. |
-|  | Storage event triggers | Support is coming soon. |
 |  | Tumbling window triggers | Known as interval-based scheduling in Fabric. Watermark and backfill workloads must be redesigned. |
 |  | Chaining or dependency triggers | Not supported yet. |
 | **Security and authentication** | Advanced configurations (CMK, dual tokens, FIC flows) | Unsupported workspace identity or service principal models don't upgrade. |
 |  | Certificate-based authentication (Web activity) | Requires redesign. |
 |  | User-assigned managed identity (UAMI) | Use workspace identity (WI) as a workaround. |
-| **Parameterization and metadata** | Global parameters | Recreate by using Fabric variable libraries. |
-|  | Dynamic linked services (parameterized connections) | Each permutation must be a separate connection and can't upgrade. |
-|  | Metadata-driven pipelines | Highly dynamic linked service or dataset-driven patterns can't upgrade. |
-| **Activities and compute** | Azure Synapse Spark job definition or notebook | Partially supported; requires redesign into Fabric notebooks or Spark jobs. |
-|  | Mapping data flows (MDF) | Supported (preview). Converted to MDF transforms in Dataflow Gen2. |
+| **Parameterization and metadata** | Dynamic linked services (parameterized connections) | Each permutation must be a separate connection. |
+| **Activities and compute** | Mapping data flows (MDF) | Supported in preview. Converted to MDF transforms in Dataflow Gen2. |
 |  | Web, webhook, or HTTP activities with custom authentication or headers | Complex authentication scenarios must be rebuilt manually. |
 |  | Notebook pool environment settings | Not supported; upgrade is blocked. |
 |  | Batch or custom activity workspace identity support | Missing workspace identity support blocks upgrade. |
@@ -204,15 +204,16 @@ The following items aren't supported in the upgrade experience today. Pipelines 
 
 ### What is "View in Fabric"?
 
-It's the one-click entry point in Azure Data Factory that brings your factory into Fabric. If you don't have a Fabric license, it takes you to sign up for a free one. It brings your factory into a capacity-free personal **My workspace** so you can review readiness and upgrade.
+It's the one-click entry point in Azure Data Factory that brings your factory into Fabric. If you don't have a Fabric license or capacity, it takes you to sign up for one. 
 
 ### Where does View in Fabric put my factory?
 
-In your personal **My workspace**—a capacity-free workspace scoped to you, with sharing disabled by design.
+It creates a new Fabric workspace with the same name as your Azure Data Factory, assigns it to the capacity you choose, and brings your factory into that
+workspace. 
 
 ### Does View in Fabric use capacity or a Fabric trial?
 
-Viewing your factory is capacity-free and never activates a Fabric trial. You need Fabric capacity when you upgrade your pipelines or create new Fabric artifacts—you can upgrade to a trial or paid capacity on demand at that point.
+Viewing your factory does not consume any capacity. You need Fabric capacity when you upgrade your pipelines or create new Fabric artifacts.
 
 ### Do I need a Fabric license before I start?
 
@@ -226,25 +227,23 @@ No. Your factory is surfaced in Fabric so you can work with it, but nothing is c
 
 No. Azure Data Factory is fully supported. New innovation lands in Fabric Data Factory—you don't have to move, but you'll want to. You can continue to author, manage, monitor, and run pipelines in Fabric exactly as you would in your Azure Data Factory studio using your existing permissions and workflows.
 
-### Is this really one click?
-
-Bringing your factory into Fabric with **View in Fabric** is. The full upgrade isn't a single click—it's assessed, staged, and validated—but each step is initiated by you, and you can stop at any point.
-
 ### What if only some of my pipelines are ready?
 
-You'll see exactly which pipelines are ready and which need attention. You can upgrade the ready ones and keep the rest running in Azure Data Factory. A partial upgrade is a supported outcome, not a failure state.
+You'll see exactly which pipelines are ready and which ones need attention. You can upgrade the ready ones and keep the rest running in Azure Data Factory. A partial upgrade is a supported outcome, not a failure state.
 
 ### Can I upgrade without mapping connections?
 
 Yes. Pipelines still upgrade, but activities that depend on unmapped connections are deactivated. Configure the required Fabric connections and re-enable those activities before running the pipelines.
 
-### Where did my datasets go, and how do I keep definitions reusable?
+### Where did my datasets go after the upgrade, and how do I keep definitions reusable?
 
-In Fabric, Azure Data Factory linked services become **connections**, and datasets are replaced by Fabric's data model. To keep definitions reusable, reference connections and parameterize them through variable libraries instead of recreating them in each pipeline.
+Fabric doesn't use Azure Data Factory datasets. During upgrade, linked services become Fabric connections, and dataset settings are applied directly to the upgraded pipeline activities.
+
+To keep values reusable across pipelines and environments, use Fabric connections for credentials and endpoints, and use variable libraries for values that need to change by environment, such as database names, folder paths, or table names.
 
 ### Will my triggers upgrade automatically?
 
-Schedule triggers upgrade automatically but are disabled afterward by design—re-enable them in Fabric. All other triggers must be manually reconfigured and re-enabled after you validate the upgraded pipelines.
+Schedule triggers and Storage event triggers are upgraded automatically. However, they are disabled by design after the upgrade and must be re-enabled once you have validated your upgraded pipelines. All other trigger types must be manually reconfigured and enabled after validation.
 
 ### Do I still need Azure Key Vault for CI/CD?
 
